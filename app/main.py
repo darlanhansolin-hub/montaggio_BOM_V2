@@ -46,7 +46,8 @@ with st.expander("Informações do Projeto (clique para editar)", expanded=True)
             st.text_input("Nome do projeto", value=st.session_state.get("project_name", ""), disabled=True, key="__proj_top_display")
         else:
             # campo editável que escreve em project_name_input
-            st.text_input("Nome do projeto", key="project_name_input", value=st.session_state.get("project_name_input", ""))
+            # Nota: não usar o param 'value' junto com 'key' para evitar warning do Streamlit
+            st.text_input("Nome do projeto", key="project_name_input")
 
     # Botões OK / Editar no topo (unificados com exportar)
     with cols[1]:
@@ -55,7 +56,7 @@ with st.expander("Informações do Projeto (clique para editar)", expanded=True)
                 st.session_state["project_locked"] = False
                 # carregar valor salvo para edição
                 st.session_state["project_name_input"] = st.session_state.get("project_name", "")
-                st.experimental_rerun()
+                st.rerun()
         else:
             if st.button("OK", key="proj_ok_top"):
                 candidate = (st.session_state.get("project_name_input") or "").strip()
@@ -72,7 +73,7 @@ with st.expander("Informações do Projeto (clique para editar)", expanded=True)
                             # fallback: se não for possível setar atributo, mantenha state apenas
                             pass
                     st.success(f"Projeto salvo: {candidate}")
-                    st.experimental_rerun()
+                    st.rerun()
 
 # -----------------------
 # Tabs / Conteúdo principal

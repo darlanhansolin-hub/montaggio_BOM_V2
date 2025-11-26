@@ -20,59 +20,20 @@ def render_exportar():
     st.header("Exportar Planilhas (XLSX) — Padrão Oracle NetSuite")
 
     # -------------------------
-    # Inicializar state do projeto
+    # Exibe informações do projeto (reutiliza session_state de app/main.py)
+    # Nota: A inicialização de project_locked, project_name e project_name_input
+    # é feita em app/main.py. Aqui apenas usamos os valores já definidos.
     # -------------------------
-    if "project_locked" not in st.session_state:
-        st.session_state["project_locked"] = False
-    if "project_name" not in st.session_state:
-        st.session_state["project_name"] = ""
-    if "project_name_input" not in st.session_state:
-        st.session_state["project_name_input"] = st.session_state["project_name"]
+    project_locked = st.session_state.get("project_locked", False)
+    project_name = st.session_state.get("project_name", "")
 
-    # -------------------------
-    # Bloco de configuração do projeto (OK / Editar)
-    # -------------------------
-    st.subheader("Configurar Projeto")
+    st.subheader("Projeto Atual")
 
-    if st.session_state["project_locked"]:
-        cols_proj_locked = st.columns([4, 1])
-        # mostrar o nome travado (disabled)
-        cols_proj_locked[0].text_input(
-            "Nome do Projeto",
-            value=st.session_state.get("project_name", ""),
-            disabled=True,
-            key="__proj_display_disabled",
-            label_visibility="visible"
-        )
-        if cols_proj_locked[1].button("Editar", key="proj_edit_btn"):
-            st.session_state["project_locked"] = False
-            st.session_state["project_name_input"] = st.session_state.get("project_name", "")
-            st.experimental_rerun()
-        st.info(f"Projeto ativo: {st.session_state.get('project_name', '')}")
+    if project_locked and project_name:
+        st.info(f"Projeto ativo: **{project_name}**")
+        st.caption("Para alterar o nome do projeto, use a seção 'Informações do Projeto' no topo da página.")
     else:
-        # usar st.form com st.form_submit_button sem key para compatibilidade com várias versões do Streamlit
-        with st.form("project_form", clear_on_submit=False):
-            cols_proj = st.columns([4, 1])
-            cols_proj[0].text_input(
-                "Nome do Projeto",
-                key="project_name_input",
-                placeholder="Digite o nome do projeto (ex.: PROJETO VOLVO TESTE EBOM)",
-                label_visibility="visible",
-            )
-            # posiciona o botão de submit (OK) abaixo dos inputs do form
-            submitted = st.form_submit_button("OK")
-        if submitted:
-            candidate = (st.session_state.get("project_name_input") or "").strip()
-            if not candidate:
-                st.error("O nome do projeto não pode ficar vazio. Informe um nome antes de confirmar.")
-            else:
-                st.session_state["project_name"] = candidate
-                st.session_state["project_locked"] = True
-                st.success(f"Projeto salvo: {candidate}")
-                st.experimental_rerun()
-
-    if not st.session_state["project_locked"]:
-        st.warning("Projeto não confirmado. Clique em OK (ou pressione Enter) para salvar o nome antes de exportar.")
+        st.warning("Projeto não confirmado. Configure o nome do projeto na seção 'Informações do Projeto' no topo da página antes de exportar.")
 
     st.write("---")
 
@@ -93,7 +54,7 @@ def render_exportar():
             biblioteca.pop(i)
             st.session_state["biblioteca"] = biblioteca
             st.success(f"Removido: {nome}")
-            st.experimental_rerun()
+            st.rerun()
         with cols[2]:
             new_key = f"rename_input_{i}"
             if new_key not in st.session_state:
@@ -113,7 +74,7 @@ def render_exportar():
                             st.error(f"Falha ao renomear: {e}")
                     st.session_state["biblioteca"] = biblioteca
                     st.success(f"Renomeado para: {new_name}")
-                    st.experimental_rerun()
+                    st.rerun()
 
     st.write("---")
     duplicates = _list_duplicate_names(biblioteca)
@@ -137,7 +98,7 @@ def render_exportar():
                 new_lib.append(c)
             st.session_state["biblioteca"] = new_lib
             st.success(f"Removidos {len(removed)} duplicatas.")
-            st.experimental_rerun()
+            st.rerun()
 
         if st.button("Auto-renomear duplicatas (adiciona sufixo)"):
             idx_map = _indices_by_name(biblioteca)
@@ -152,7 +113,7 @@ def render_exportar():
                             pass
             st.session_state["biblioteca"] = biblioteca
             st.success(f"Auto-renomeadas {changed} entradas.")
-            st.experimental_rerun()
+            st.rerun()
 
         st.write("Você também pode renomear manualmente cada item na lista acima ou remover entradas específicas.")
         return
@@ -162,14 +123,14 @@ def render_exportar():
     if st.button("Gerar arquivo XLSX (3 sheets)"):
         # validar que o projeto foi confirmado antes de gerar
         if not st.session_state.get("project_locked") or not st.session_state.get("project_name", "").strip():
-            st.error("Confirme o nome do projeto (clique em OK) antes de exportar.")
+            st.error("Confirme o nome do projeto na seção 'Informações do Projeto' no topo da página antes de exportar.")
         else:
             try:
                 project_name = st.session_state["project_name"]
                 xlsx_bytes = gerar_export_xlsx_unico(biblioteca, project_name)
                 st.session_state["_last_export_xlsx"] = xlsx_bytes
                 st.success("Arquivo XLSX gerado. Use o botão abaixo para baixar.")
-                st.experimental_rerun()
+                st.rerun()
             except Exception as e:
                 st.error(f"Erro ao gerar arquivo XLSX: {e}")
                 return
