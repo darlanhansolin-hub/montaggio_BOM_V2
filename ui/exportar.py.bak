@@ -54,7 +54,7 @@ def render_exportar():
             biblioteca.pop(i)
             st.session_state["biblioteca"] = biblioteca
             st.success(f"Removido: {nome}")
-            st.experimental_rerun()
+            st.rerun()
         with cols[2]:
             new_key = f"rename_input_{i}"
             if new_key not in st.session_state:
@@ -74,7 +74,7 @@ def render_exportar():
                             st.error(f"Falha ao renomear: {e}")
                     st.session_state["biblioteca"] = biblioteca
                     st.success(f"Renomeado para: {new_name}")
-                    st.experimental_rerun()
+                    st.rerun()
 
     st.write("---")
     duplicates = _list_duplicate_names(biblioteca)
@@ -98,7 +98,7 @@ def render_exportar():
                 new_lib.append(c)
             st.session_state["biblioteca"] = new_lib
             st.success(f"Removidos {len(removed)} duplicatas.")
-            st.experimental_rerun()
+            st.rerun()
 
         if st.button("Auto-renomear duplicatas (adiciona sufixo)"):
             idx_map = _indices_by_name(biblioteca)
@@ -113,7 +113,7 @@ def render_exportar():
                             pass
             st.session_state["biblioteca"] = biblioteca
             st.success(f"Auto-renomeadas {changed} entradas.")
-            st.experimental_rerun()
+            st.rerun()
 
         st.write("Você também pode renomear manualmente cada item na lista acima ou remover entradas específicas.")
         return
@@ -130,7 +130,7 @@ def render_exportar():
                 xlsx_bytes = gerar_export_xlsx_unico(biblioteca, project_name)
                 st.session_state["_last_export_xlsx"] = xlsx_bytes
                 st.success("Arquivo XLSX gerado. Use o botão abaixo para baixar.")
-                st.experimental_rerun()
+                st.rerun()
             except Exception as e:
                 st.error(f"Erro ao gerar arquivo XLSX: {e}")
                 return
