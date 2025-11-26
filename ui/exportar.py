@@ -112,25 +112,21 @@ def ensure_form_state_defaults() -> None:
     """
     Ensure all form keys have default values in session_state.
     Call this at the start of render to initialize form fields.
+    Uses FORM_KEYS constant to ensure consistency.
     """
-    defaults = {
-        "form_nome": "",
-        "form_cor": "",
-        "form_descricao": "",
-    }
-    for key, default_value in defaults.items():
+    for key in FORM_KEYS:
         if key not in st.session_state:
-            st.session_state[key] = default_value
+            st.session_state[key] = ""
 
 
 def clear_form_fields() -> None:
     """
     Clear all form fields by resetting their session_state keys to empty values.
     Also clears the edit_id to switch back to insert mode.
+    Uses FORM_KEYS constant to ensure consistency.
     """
-    st.session_state["form_nome"] = ""
-    st.session_state["form_cor"] = ""
-    st.session_state["form_descricao"] = ""
+    for key in FORM_KEYS:
+        st.session_state[key] = ""
     st.session_state["edit_id"] = None
 
 
