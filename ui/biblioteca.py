@@ -154,13 +154,12 @@ def render_biblioteca():
                 # garante que exista um projeto em session_state
                 if "projeto" not in st.session_state or st.session_state.get("projeto") is None:
                     if Projeto is not None:
-                        st.session_state["projeto"] = Projeto(projeto_nome="PROJETO SEM NOME", conjuntos=[])
-                    else:
+                        st.session_state["projeto"] = Projeto(projeto_nome="PROJETO SEM NOME", conjuntos=[])                    else:
                         # estrutura mínima se modelo Projeto não existir
                         st.session_state["projeto"] = type("P", (), {"projeto_nome": "PROJETO SEM NOME", "conjuntos": []})()
                 st.session_state["projeto"].conjuntos.append(cj)
                 st.success(f"{nome} inserido no projeto.")
-                st.rerun()
+                st.experimental_rerun()
 
     st.write("---")
     st.subheader("Conjuntos atualmente no Projeto")
@@ -182,7 +181,7 @@ def render_biblioteca():
         if cols[1].button("Remover", key=f"remover_proj_{idx}"):
             projeto.conjuntos.pop(idx)
             st.success(f"{nome} removido do projeto.")
-            st.rerun()
+            st.experimental_rerun()
 
         # Expander de debug/validação: mostra tabela com breakdown dos cálculos
         with st.expander("Mostrar detalhes do cálculo (debug)", expanded=False):
