@@ -1,6 +1,6 @@
 import sys
 import pathlib
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent))
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent)))
 
 import streamlit as st
 from ui import cadastro_conjunto, biblioteca, exportar
@@ -10,7 +10,7 @@ from core.logic import load_materias_primas
 st.set_page_config(page_title="Montaggio — Gerador de BOM Oracle", layout="wide")
 
 if "projeto" not in st.session_state:
-    st.session_state["projeto"] = Projeto(projeto_nome="PROJETO SEM NOME", conjuntos=[])
+    st.session_state["projeto"] = Projeto(projeto_nome="PROJETO SEM NOME", conjuntos=[]) 
 
 if "biblioteca" not in st.session_state:
     st.session_state["biblioteca"] = []
@@ -56,7 +56,7 @@ with st.expander("Informações do Projeto (clique para editar)", expanded=True)
                 st.session_state["project_locked"] = False
                 # carregar valor salvo para edição
                 st.session_state["project_name_input"] = st.session_state.get("project_name", "")
-                st.rerun()
+                st.experimental_rerun()
         else:
             if st.button("OK", key="proj_ok_top"):
                 candidate = (st.session_state.get("project_name_input") or "").strip()
@@ -73,7 +73,7 @@ with st.expander("Informações do Projeto (clique para editar)", expanded=True)
                             # fallback: se não for possível setar atributo, mantenha state apenas
                             pass
                     st.success(f"Projeto salvo: {candidate}")
-                    st.rerun()
+                    st.experimental_rerun() 
 
 # -----------------------
 # Tabs / Conteúdo principal
