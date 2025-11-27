@@ -82,10 +82,13 @@ if "main_tab" not in st.session_state:
     st.session_state["main_tab"] = "1) Cadastrar Conjunto"
 
 tab_options = ["1) Cadastrar Conjunto", "2) Biblioteca", "3) Exportar Planilhas"]
+current_tab = st.session_state.get("main_tab", tab_options[0])
+current_index = tab_options.index(current_tab) if current_tab in tab_options else 0
+
 selected_tab = st.radio(
     "Navegação",
     options=tab_options,
-    index=tab_options.index(st.session_state["main_tab"]) if st.session_state["main_tab"] in tab_options else 0,
+    index=current_index,
     key="main_tab",
     horizontal=True,
     label_visibility="collapsed"

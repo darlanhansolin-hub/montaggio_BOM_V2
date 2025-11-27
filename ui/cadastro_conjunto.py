@@ -134,8 +134,6 @@ def render_cadastro():
                             default_index = lista_mps.index(current_mp_val)
                         else:
                             default_index = 0
-                            if mp_key not in st.session_state:
-                                st.session_state[mp_key] = lista_mps[0] if lista_mps else ""
                         mp_sel = st.selectbox("Matéria-prima", options=lista_mps, index=default_index, key=mp_key)
                     else:
                         if mp_manual_key not in st.session_state:
@@ -185,14 +183,14 @@ def render_cadastro():
             else:
                 st.session_state["biblioteca"].append(cj)
                 st.success(f"Conjunto '{nome}' salvo na biblioteca (sessão).")
+                # Only add to project when creating new (not editing existing)
+                if st.session_state.get("adicionar_ao_projeto", False):
+                    if "projeto" not in st.session_state:
+                        from core.models import Projeto
+                        st.session_state["projeto"] = Projeto(projeto_nome="PROJETO SEM NOME", conjuntos=[])
+                    st.session_state["projeto"].conjuntos.append(cj)
 
             # Clear form after saving
             st.session_state["cad_should_clear"] = True
-
-            if st.session_state.get("adicionar_ao_projeto", False):
-                if "projeto" not in st.session_state:
-                    from core.models import Projeto
-                    st.session_state["projeto"] = Projeto(projeto_nome="PROJETO SEM NOME", conjuntos=[])
-                st.session_state["projeto"].conjuntos.append(cj)
 
             st.experimental_rerun()
