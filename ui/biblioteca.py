@@ -160,7 +160,7 @@ def render_biblioteca():
                         st.session_state["projeto"] = type("P", (), {"projeto_nome": "PROJETO SEM NOME", "conjuntos": []})()
                 st.session_state["projeto"].conjuntos.append(cj)
                 st.success(f"{nome} inserido no projeto.")
-                st.experimental_rerun()
+                st.rerun()
 
     st.write("---")
     st.subheader("Conjuntos atualmente no Projeto")
@@ -182,7 +182,7 @@ def render_biblioteca():
         if cols[1].button("Remover", key=f"remover_proj_{idx}"):
             projeto.conjuntos.pop(idx)
             st.success(f"{nome} removido do projeto.")
-            st.experimental_rerun()
+            st.rerun()
 
         # Expander de debug/validação: mostra tabela com breakdown dos cálculos
         with st.expander("Mostrar detalhes do cálculo (debug)", expanded=False):
