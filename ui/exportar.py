@@ -1,5 +1,6 @@
 import streamlit as st
 import unicodedata
+import uuid
 from collections import Counter, defaultdict
 from typing import List, Dict, Any, Optional
 from core.export_xlsx import gerar_export_xlsx_unico
@@ -19,8 +20,8 @@ def _get_saved_items_store() -> List[Dict[str, Any]]:
 def insert_conjunto(data: Dict[str, Any]) -> str:
     """Insert a new conjunto into the saved items store. Returns the assigned ID."""
     store = _get_saved_items_store()
-    # Generate a unique ID
-    item_id = f"item_{len(store)}_{id(data)}"
+    # Generate a unique ID using UUID
+    item_id = f"item_{uuid.uuid4().hex[:12]}"
     data["__store_id"] = item_id
     store.append(data)
     return item_id

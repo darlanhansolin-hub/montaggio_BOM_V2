@@ -238,7 +238,7 @@ def render_cadastro():
                 # Also update in saved items store if applicable
                 if edit_id:
                     from ui.exportar import update_conjunto
-                    update_conjunto(edit_id, cj.dict())
+                    update_conjunto(edit_id, cj.model_dump())
             else:
                 # Insert new item
                 st.session_state["biblioteca"].append(cj)
@@ -246,7 +246,7 @@ def render_cadastro():
                 
                 # Also add to saved items store
                 from ui.exportar import insert_conjunto
-                store_id = insert_conjunto(cj.dict())
+                store_id = insert_conjunto(cj.model_dump())
                 # Try to set the store_id on the object
                 try:
                     cj.__dict__["__store_id"] = store_id
