@@ -1,0 +1,74 @@
+diff --git a/ui/exportar.py b/ui/exportar.py
+--- a/ui/exportar.py
++++ b/ui/exportar.py
+@@ -241,67 +241,7 @@
+-    st.subheader("Salvar Conjunto na Biblioteca")
+-
+-    # Determine if we're in edit mode
+-    edit_id = st.session_state.get("edit_id")
+-    is_editing = edit_id is not None
+-
+-    if is_editing:
+-        st.info(f"Editando conjunto (ID: {edit_id}). Altere os campos e clique em 'Salvar'.")
+-
+-    # Form inputs with explicit keys
+-    st.text_input(
+-        "Nome do Conjunto",
+-        key="form_nome",
+-        placeholder="Digite o nome do conjunto"
+-    )
+-    st.text_input(
+-        "Cor do Conjunto",
+-        key="form_cor",
+-        placeholder="Digite a cor do conjunto"
+-    )
+-    st.text_area(
+-        "Descrição (opcional)",
+-        key="form_descricao",
+-        placeholder="Descrição adicional do conjunto"
+-    )
+-
+-    # Save button
+-    col_save, col_cancel = st.columns([1, 1])
+-    with col_save:
+-        if st.button("Salvar Conjunto na Biblioteca", key="btn_salvar_conjunto"):
+-            nome = st.session_state.get("form_nome", "").strip()
+-            cor = st.session_state.get("form_cor", "").strip()
+-            descricao = st.session_state.get("form_descricao", "").strip()
+-
+-            if not nome:
+-                st.error("O nome do conjunto é obrigatório.")
+-            elif not cor:
+-                st.error("A cor do conjunto é obrigatória.")
+-            else:
+-                data = {
+-                    "nome": nome,
+-                    "cor": cor,
+-                    "descricao": descricao,
+-                }
+-
+-                if is_editing:
+-                    # Update existing item
+-                    success = update_conjunto(edit_id, data)
+-                    if success:
+-                        st.success(f"Conjunto '{nome}' atualizado com sucesso!")
+-                    else:
+-                        st.error("Erro ao atualizar conjunto. Item não encontrado.")
+-                else:
+-                    # Insert new item
+-                    new_id = insert_conjunto(data)
+-                    st.success(f"Conjunto '{nome}' salvo com sucesso! (ID: {new_id})")
+-
+-                # Clear form fields and reset edit mode
+-                clear_form_fields()
+-                st.experimental_rerun()
+-
+-    with col_cancel:
+-        if is_editing:
+-            if st.button("Cancelar Edição", key="btn_cancelar_edicao"):
+-                clear_form_fields()
+-                st.experimental_rerun()
+-
+-    st.write("---")
++    st.info("Salvar Conjunto na Biblioteca foi desabilitado temporariamente para evitar bloqueios do arquivo.")
++    st.write("---")

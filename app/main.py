@@ -34,8 +34,8 @@ if "project_name" not in st.session_state:
     initial_name = getattr(projeto_obj, "projeto_nome", "") if projeto_obj else ""
     st.session_state["project_name"] = initial_name
 
-if "project_name_input" not in st.session_state:
-    st.session_state["project_name_input"] = st.session_state.get("project_name", "")
+if "project_name_input_top" not in st.session_state:
+    st.session_state["project_name_input_top"] = st.session_state.get("project_name", "")
 
 with st.expander("Informações do Projeto (clique para editar)", expanded=True):
     cols = st.columns([4, 1])
@@ -45,8 +45,8 @@ with st.expander("Informações do Projeto (clique para editar)", expanded=True)
             # exibe nome confirmado, disabled (uso de key diferente evita conflito)
             st.text_input("Nome do projeto", value=st.session_state.get("project_name", ""), disabled=True, key="__proj_top_display")
         else:
-            # campo editável que escreve em project_name_input
-            st.text_input("Nome do projeto", key="project_name_input", value=st.session_state.get("project_name_input", ""))
+            # campo editável que escreve em project_name_input_top
+            st.text_input("Nome do projeto", key="project_name_input_top", value=st.session_state.get("project_name_input_top", ""))
 
     # Botões OK / Editar no topo (unificados com exportar)
     with cols[1]:
@@ -54,11 +54,11 @@ with st.expander("Informações do Projeto (clique para editar)", expanded=True)
             if st.button("Editar", key="proj_edit_top"):
                 st.session_state["project_locked"] = False
                 # carregar valor salvo para edição
-                st.session_state["project_name_input"] = st.session_state.get("project_name", "")
+                st.session_state["project_name_input_top"] = st.session_state.get("project_name", "")
                 st.experimental_rerun()
         else:
             if st.button("OK", key="proj_ok_top"):
-                candidate = (st.session_state.get("project_name_input") or "").strip()
+                candidate = (st.session_state.get("project_name_input_top") or "").strip()
                 if not candidate:
                     st.error("O nome do projeto não pode ficar vazio.")
                 else:
