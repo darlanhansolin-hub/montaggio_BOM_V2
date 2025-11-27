@@ -77,13 +77,23 @@ with st.expander("Informações do Projeto (clique para editar)", expanded=True)
 # -----------------------
 # Tabs / Conteúdo principal
 # -----------------------
-tabs = st.tabs(["1) Cadastrar Conjunto", "2) Biblioteca", "3) Exportar Planilhas"])
+# Initialize main_tab in session state for programmatic tab switching
+if "main_tab" not in st.session_state:
+    st.session_state["main_tab"] = "1) Cadastrar Conjunto"
 
-with tabs[0]:
+tab_options = ["1) Cadastrar Conjunto", "2) Biblioteca", "3) Exportar Planilhas"]
+selected_tab = st.radio(
+    "Navegação",
+    options=tab_options,
+    index=tab_options.index(st.session_state["main_tab"]) if st.session_state["main_tab"] in tab_options else 0,
+    key="main_tab",
+    horizontal=True,
+    label_visibility="collapsed"
+)
+
+if selected_tab == "1) Cadastrar Conjunto":
     cadastro_conjunto.render_cadastro()
-
-with tabs[1]:
+elif selected_tab == "2) Biblioteca":
     biblioteca.render_biblioteca()
-
-with tabs[2]:
+elif selected_tab == "3) Exportar Planilhas":
     exportar.render_exportar()

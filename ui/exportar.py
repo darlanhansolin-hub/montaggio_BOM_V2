@@ -16,6 +16,46 @@ def _indices_by_name(biblioteca: List):
         idx_map[getattr(c, "nome", "<sem nome>")].append(i)
     return idx_map
 
+
+def populate_cadastro_session_for_item(item, idx: int):
+    """
+    Populates all cadastro session keys (cad_*, comp_*, mp_*) from the given item.
+    Sets cad_edit_id to the library index so the cadastro form knows to update instead of append.
+    """
+    # Clear any existing fields first
+    from ui.cadastro_conjunto import clear_cadastro_session_fields_immediate
+    clear_cadastro_session_fields_immediate()
+
+    # Set main fields
+    st.session_state["cad_nome"] = getattr(item, "nome", "")
+    st.session_state["cad_cor"] = getattr(item, "cor", "")
+
+    componentes = getattr(item, "componentes", []) or []
+    st.session_state["cad_num_componentes"] = max(1, len(componentes))
+
+    # Populate each component and its matérias-primas
+    for i, comp in enumerate(componentes):
+        st.session_state[f"comp_nome_{i}"] = getattr(comp, "nome", "")
+        st.session_state[f"comp_qtd_{i}"] = getattr(comp, "quantidade", 1)
+
+        materias = getattr(comp, "materias", []) or []
+        st.session_state[f"comp_{i}_num_mp"] = max(1, len(materias))
+
+        for j, mp in enumerate(materias):
+            mp_nome = getattr(mp, "mp", "")
+            # Store both select and manual keys to handle either case
+            st.session_state[f"mp_select_{i}_{j}"] = mp_nome
+            st.session_state[f"mp_manual_{i}_{j}"] = mp_nome
+            st.session_state[f"mp_qtd_{i}_{j}"] = getattr(mp, "quantidade", 1.0)
+            st.session_state[f"mp_un_{i}_{j}"] = getattr(mp, "unidade", "KG")
+            st.session_state[f"mp_rend_{i}_{j}"] = getattr(mp, "rendimento", 100.0)
+            st.session_state[f"mp_toggle_{i}_{j}"] = True  # Open the details
+
+    # Mark that we are editing an existing item (library index)
+    st.session_state["cad_edit_id"] = idx
+    # Switch to the cadastro tab
+    st.session_state["main_tab"] = "1) Cadastrar Conjunto"
+
 def render_exportar():
     st.header("Exportar Planilhas (XLSX) — Padrão Oracle NetSuite")
 
@@ -87,14 +127,17 @@ def render_exportar():
     st.subheader("Conjuntos na Biblioteca")
     for i, c in enumerate(biblioteca):
         nome = getattr(c, "nome", "<sem nome>")
-        cols = st.columns([6,1,1])
+        cols = st.columns([5,1,1,1])
         cols[0].write(f"{i}. {nome}")
-        if cols[1].button("Remover", key=f"remover_{i}"):
+        if cols[1].button("Editar", key=f"editar_{i}"):
+            populate_cadastro_session_for_item(c, i)
+            st.experimental_rerun()
+        if cols[2].button("Remover", key=f"remover_{i}"):
             biblioteca.pop(i)
             st.session_state["biblioteca"] = biblioteca
             st.success(f"Removido: {nome}")
             st.experimental_rerun()
-        with cols[2]:
+        with cols[3]:
             new_key = f"rename_input_{i}"
             if new_key not in st.session_state:
                 st.session_state[new_key] = nome
