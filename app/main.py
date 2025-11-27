@@ -43,10 +43,14 @@ with st.expander("Informações do Projeto (clique para editar)", expanded=True)
     with cols[0]:
         if st.session_state["project_locked"]:
             # exibe nome confirmado, disabled (uso de key diferente evita conflito)
-            st.text_input("Nome do projeto", value=st.session_state.get("project_name", ""), disabled=True, key="__proj_top_display")
+            st.text_input("Nome do projeto",
+                          value=st.session_state.get("project_name", ""),
+                          disabled=True,
+                          key="__proj_top_display")
         else:
             # campo editável que escreve em project_name_input
-            st.text_input("Nome do projeto", key="project_name_input", value=st.session_state.get("project_name_input", ""))
+            # Nota: não usar o param 'value' junto com 'key' para evitar warning do Streamlit
+            st.text_input("Nome do projeto", key="project_name_input")
 
     # Botões OK / Editar no topo (unificados com exportar)
     with cols[1]:
