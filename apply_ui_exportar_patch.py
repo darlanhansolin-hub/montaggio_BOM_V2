@@ -1,0 +1,174 @@
+import shutil
+from pathlib import Path
+import sys
+
+src = Path("ui") / "exportar.py"
+bak = Path("ui") / "exportar.py.bak"
+
+if not src.exists():
+    print("ERRO: arquivo ui/exportar.py não encontrado no diretório atual.")
+    sys.exit(1)
+
+# faz backup
+shutil.copy(src, bak)
+
+orig_lines = src.read_text(encoding="utf-8").splitlines()
+
+# marcador exato que vamos procurar (linha a ser substituída)
+marker_line = 'st.info("Salvar Conjunto na Biblioteca foi desabilitado temporariamente para evitar bloqueios do arquivo.")'
+marker_next = 'st.write("---")'
+
+# novo bloco a inserir (sem a camada de diff/patch)
+new_block = """    # Restaura UI de Salvar/Editar Conjunto. Usa as funções do projeto quando existirem,
+    # caso contrário usa um fallback em st.session_state para não quebrar o app.
+    try:
+        insert_conjunto
+        update_conjunto
+        get_all_conjuntos
+        clear_form_fields
+        use_project_funcs = True
+    except Exception:
+        use_project_funcs = False
+
+    if not use_project_funcs:
+        if "conjuntos" not in st.session_state:
+            st.session_state["conjuntos"] = []
+        def insert_conjunto(data):
+            next_id = max([c["id"] for c in st.session_state["conjuntos"]], default=0) + 1
+            item = {"id": next_id, **data}
+            st.session_state["conjuntos"].append(item)
+            return next_id
+        def update_conjunto(item_id, data):
+            for c in st.session_state["conjuntos"]:
+                if c["id"] == item_id:
+                    c.update(data)
+                    return True
+            return False
+        def get_all_conjuntos():
+            return list(st.session_state["conjuntos"])
+        def clear_form_fields():
+            for k in ("form_nome", "form_cor", "form_descricao", "edit_id"):
+                if k in st.session_state:
+                    del st.session_state[k]
+
+    def populate_form_fields_from_item(item):
+        st.session_state["form_nome"] = item.get("nome", "")
+        st.session_state["form_cor"] = item.get("cor", "")
+        st.session_state["form_descricao"] = item.get("descricao", "")
+
+    st.subheader("Salvar Conjunto na Biblioteca")
+
+    edit_id = st.session_state.get("edit_id")
+    is_editing = edit_id is not None
+
+    nome_val = st.session_state.get("form_nome", "")
+    cor_val = st.session_state.get("form_cor", "")
+    desc_val = st.session_state.get("form_descricao", "")
+
+    st.text_input("Nome do Conjunto", key="form_nome", value=nome_val, placeholder="Digite o nome do conjunto")
+    st.text_input("Cor do Conjunto", key="form_cor", value=cor_val, placeholder="Digite a cor do conjunto")
+    st.text_area("Descrição (opcional)", key="form_descricao", value=desc_val, placeholder="Descrição adicional do conjunto")
+
+    col_save, col_cancel = st.columns([1, 1])
+    with col_save:
+        label = "Atualizar Conjunto" if is_editing else "Salvar Conjunto na Biblioteca"
+        if st.button(label, key="btn_salvar_conjunto"):
+            nome = st.session_state.get("form_nome", "").strip()
+            cor = st.session_state.get("form_cor", "").strip()
+            descricao = st.session_state.get("form_descricao", "").strip()
+
+            if not nome:
+                st.error("O nome do conjunto é obrigatório.")
+            elif not cor:
+                st.error("A cor do conjunto é obrigatória.")
+            else:
+                data = {"nome": nome, "cor": cor, "descricao": descricao}
+                if is_editing:
+                    try:
+                        success = update_conjunto(edit_id, data)
+                    except Exception:
+                        success = False
+                    if success:
+                        st.success(f"Conjunto '{nome}' atualizado com sucesso!")
+                    else:
+                        st.error("Erro ao atualizar conjunto. Item não encontrado ou função indisponível.")
+                else:
+                    try:
+                        new_id = insert_conjunto(data)
+                    except Exception:
+                        # fallback se insert_conjunto não estiver disponível
+                        new_id = insert_conjunto(data)
+                    st.success(f"Conjunto '{nome}' salvo com sucesso! (ID: {new_id})")
+
+                # limpa campos e encerra o modo edição
+                try:
+                    clear_form_fields()
+                except Exception:
+                    for k in ("form_nome", "form_cor", "form_descricao", "edit_id"):
+                        if k in st.session_state:
+                            del st.session_state[k]
+                st.experimental_rerun()
+
+    with col_cancel:
+        if is_editing:
+            if st.button("Cancelar Edição", key="btn_cancelar_edicao"):
+                try:
+                    clear_form_fields()
+                except Exception:
+                    for k in ("form_nome", "form_cor", "form_descricao", "edit_id"):
+                        if k in st.session_state:
+                            del st.session_state[k]
+                st.experimental_rerun()
+
+    st.write("---")
+
+    # Lista de conjuntos com botão Editar
+    try:
+        conjuntos = get_all_conjuntos()
+    except Exception:
+        try:
+            conjuntos = get_all_conjuntos()
+        except Exception:
+            conjuntos = []
+
+    if conjuntos:
+        st.write("Conjuntos existentes:")
+        for c in conjuntos:
+            cols = st.columns([4, 1])
+            cols[0].write(f\"**{c.get('nome')}** — {c.get('cor')}  \\n{c.get('descricao','')}\")
+            if cols[1].button(\"Editar\", key=f\"edit_{c['id']}\"):
+                st.session_state[\"edit_id\"] = c[\"id\"]
+                populate_form_fields_from_item(c)
+                st.experimental_rerun()
+    else:
+        st.info(\"Nenhum conjunto salvo ainda.\")
+"""
+
+# procura e substitui
+out_lines = []
+i = 0
+replaced = False
+while i < len(orig_lines):
+    line = orig_lines[i]
+    if line.strip() == marker_line:
+        # verifica próximo
+        next_i = i + 1
+        if next_i < len(orig_lines) and orig_lines[next_i].strip() == marker_next:
+            # insere new_block (mantendo identação do arquivo original)
+            indent = orig_lines[i][:len(orig_lines[i]) - len(orig_lines[i].lstrip())]
+            inserted = [(indent + l) if l.strip() != "" else l for l in new_block.splitlines()]
+            out_lines.extend(inserted)
+            i = next_i + 1
+            replaced = True
+            continue
+    out_lines.append(line)
+    i += 1
+
+if not replaced:
+    print("ERRO: não encontrei o marcador esperado no arquivo. Nada foi alterado.")
+    print("Verifique se o arquivo já foi alterado anteriormente. Um backup foi criado em ui/exportar.py.bak")
+    sys.exit(2)
+
+# escreve arquivo atualizado
+src.write_text("\n".join(out_lines) + "\n", encoding="utf-8")
+print("done — ui/exportar.py atualizado. Backup salvo em ui/exportar.py.bak")
